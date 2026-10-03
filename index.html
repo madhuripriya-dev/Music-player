@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nature Music Player</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#c2e9fb,#a1c4fd);
+}
+
+.player{
+    width:360px;
+    background:white;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+h2{ margin-bottom:5px; }
+p{ color:gray; margin-bottom:15px; }
+
+.controls button{
+    background:#0077b6;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    margin:5px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.controls button:hover{
+    background:#023e8a;
+}
+
+#progress{
+    width:100%;
+    margin-top:15px;
+}
+
+.time{
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    margin-top:5px;
+    color:#444;
+}
+
+.volume{
+    margin-top:15px;
+}
+
+.playlist{
+    margin-top:20px;
+    text-align:left;
+}
+
+.playlist li{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    cursor:pointer;
+}
+
+.playlist li:hover{
+    background:#f1f1f1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="player">
+
+<h2 id="title">Loading...</h2>
+<p id="artist">Nature Sounds</p>
+
+<audio id="audio"></audio>
+
+<input type="range" id="progress" value="0">
+
+<div class="time">
+<span id="currentTime">0:00</span>
+<span id="duration">0:00</span>
+</div>
+
+<div class="controls">
+<button onclick="prevSong()">⏮</button>
+<button onclick="playPause()" id="playBtn">▶</button>
+<button onclick="nextSong()">⏭</button>
+</div>
+
+<div class="volume">
+Volume:
+<input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+</div>
+
+<div class="playlist">
+<h3>🌿 Nature Playlist</h3>
+<ul id="playlist"></ul>
+</div>
+
+</div>
+
+<script>
+
+/* 🔥 SAFE WORKING AUDIO LINKS */
+
+
+
+  const songs = [
+{
+  title:"Peaceful Ambient",
+  artist:"Relax Zone",
+  src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+},
+{
+  title:"Ocean Waves Meditation",
+  artist:"Relax",
+  src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+},
+{
+  title:"Forest Calm Nature Sounds",
+  artist:"Nature",
+  src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+}
+];
+let currentSong = 0;
+
+const audio = document.getElementById("audio");
+const title = document.getElementById("title");
+const artist = document.getElementById("artist");
+const progress = document.getElementById("progress");
+const playBtn = document.getElementById("playBtn");
+const volume = document.getElementById("volume");
+const currentTime = document.getElementById("currentTime");
+const duration = document.getElementById("duration");
+const playlist = document.getElementById("playlist");
+
+function loadSong(index){
+    audio.src = songs[index].src;
+    title.textContent = songs[index].title;
+    artist.textContent = songs[index].artist;
+}
+
+loadSong(currentSong);
+
+/* ▶ PLAY / PAUSE */
+function playPause(){
+    if(audio.paused){
+        audio.play();
+        playBtn.innerHTML = "⏸";
+    }else{
+        audio.pause();
+        playBtn.innerHTML = "▶";
+    }
+}
+
+/* ⏭ NEXT */
+function nextSong(){
+    currentSong = (currentSong + 1) % songs.length;
+    loadSong(currentSong);
+    audio.play();
+    playBtn.innerHTML = "⏸";
+}
+
+/* ⏮ PREV */
+function prevSong(){
+    currentSong = (currentSong - 1 + songs.length) % songs.length;
+    loadSong(currentSong);
+    audio.play();
+    playBtn.innerHTML = "⏸";
+}
+
+/* ⏱ TIME UPDATE */
+audio.addEventListener("timeupdate", () => {
+    progress.max = audio.duration || 0;
+    progress.value = audio.currentTime;
+
+    let m = Math.floor(audio.currentTime / 60);
+    let s = Math.floor(audio.currentTime % 60);
+    currentTime.textContent = `${m}:${s < 10 ? "0"+s : s}`;
+
+    if(!isNaN(audio.duration)){
+        let dm = Math.floor(audio.duration / 60);
+        let ds = Math.floor(audio.duration % 60);
+        duration.textContent = `${dm}:${ds < 10 ? "0"+ds : ds}`;
+    }
+});
+
+/* SEEK */
+progress.addEventListener("input", () => {
+    audio.currentTime = progress.value;
+});
+
+/* VOLUME */
+volume.addEventListener("input", () => {
+    audio.volume = volume.value;
+});
+
+/* AUTO NEXT */
+audio.addEventListener("ended", () => {
+    nextSong();
+});
+
+/* PLAYLIST */
+songs.forEach((song,index)=>{
+    const li=document.createElement("li");
+    li.textContent=`${song.title} - ${song.artist}`;
+    li.onclick=()=>{
+        currentSong=index;
+        loadSong(currentSong);
+        audio.play();
+        playBtn.innerHTML="⏸";
+    };
+    playlist.appendChild(li);
+});
+
+</script>
+
+</body>
+</html>
